@@ -7,38 +7,6 @@ const rl = readline.createInterface({
   output: process.stdout
 })
 
-const inputFirstTicker = () => {
-  return new Promise((resolve, reject) => {
-    rl.question('Enter the ticker for 1st currency:\n', (answer) => {
-      resolve(answer);
-    })
-  })
-}
-
-const inputSecondTicker = () => {
-  return new Promise((resolve, reject) => {
-    rl.question('Enter the ticker for 2nd currency:\n', (answer) => {
-      resolve(answer);
-    })
-  })
-}
-
-const inputInterval = () => {
-  return new Promise((resolve, reject) => {
-    rl.question('Enter the time interval for GET:\n', (answer) => {
-      resolve(answer);
-    })
-  })
-}
-
-const inputPercentage = () => {
-  return new Promise((resolve, reject) => {
-    rl.question('Enter the oscillation percent:\n', (answer) => {
-      resolve(answer);
-    })
-  })
-}
-
 const createInDB = async (first_ticker, second_ticker, ask, price_oscillation_percent, fetch_interval) => {
   let c = await database.Oscillation.create({
     first_ticker: first_ticker,
@@ -51,20 +19,17 @@ const createInDB = async (first_ticker, second_ticker, ask, price_oscillation_pe
 }
 
 var ask;
+var initial_ask;
 var upper_limit;
 var lower_limit;
 
 const getTickers = async (first_ticker, second_ticker, fetch_interval, price_oscillation_percent) => {
-  // first_ticker = await inputFirstTicker();
-  // second_ticker = await inputSecondTicker();
-  // fetch_interval = await inputInterval();
-  // price_oscillation_percent = await inputPercentage()
-
   request(`https://api.uphold.com/v0/ticker/${ first_ticker }-${ second_ticker }`, function (error, response, body) {
     if (error)
       console.error('error:', error);
     const first_obj = JSON.parse(body);
     const percent = parseFloat(first_obj.ask) * price_oscillation_percent/100;
+    initial_ask = first_obj.ask;
     upper_limit = parseFloat(first_obj.ask) + percent;
     lower_limit = parseFloat(first_obj.ask) - percent;
   });
@@ -77,10 +42,9 @@ const getTickers = async (first_ticker, second_ticker, fetch_interval, price_osc
       let obj = JSON.parse(body);
       ask = parseFloat(obj.ask);
 
-      //Check if limit is exceeded and persist to db
+      // Check if limit is exceeded and persist to db
       if (ask > upper_limit || ask < lower_limit ) {
-        let message = `WARNING for pair ${first_ticker}:${second_ticker} : Ask price = ${ ask } is more than 
-        ${ price_oscillation_percent } percent difference from initial values of ${ lower_limit } - ${ upper_limit }`
+        let message = `WARNING: Ask price 1 ${ first_ticker } = ${ ask } ${ second_ticker } \n is more than ${ price_oscillation_percent } percent difference from initial ask price of\n 1 ${ first_ticker } = ${ initial_ask } ${ second_ticker }.`
         console.log(message);
         createInDB(first_ticker, second_ticker, ask, price_oscillation_percent, fetch_interval).catch(e => {
           console.log('There has been a problem with your fetch operation: ' + e.message);
