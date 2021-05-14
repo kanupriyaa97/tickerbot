@@ -45,8 +45,3 @@ Once the containers are running - open [http://localhost:3000/](http://localhost
 You can refresh [http://localhost:3000/](http://localhost:3000/) as many times as you would like and enter as many ticker pairs you would like. Warnings for all ticker pairs will show on stdout. 
 
 All warnings will be persisted to the Postgres database. You can look at the data in the table by following the instructions in this link: [https://dev.to/shree_j/how-to-install-and-run-psql-using-docker-41j2](https://dev.to/shree_j/how-to-install-and-run-psql-using-docker-41j2)
-
-# Instructions for running each ticker pair on new terminal
-Uncomment lines 58-61 in bot/bot.js which will allow the params to be inputted from stdin. Modify code accordingly to use the data coming in from stdin. Each new terminal can use a new ticker pair. Please only do this if you are familiar with Node JS.
-
-
