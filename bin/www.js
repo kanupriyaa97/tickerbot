@@ -1,101 +1,91 @@
-const request = require('request');
-const readline = require('readline');
-const database  = require('../database')
+#!/usr/bin/env node
 
-var first_ticker;
-var second_ticker;
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-})
+/**
+ * Module dependencies.
+ */
 
-const inputFirstTicker = () => {
-  return new Promise((resolve, reject) => {
-    rl.question('Enter the ticker for 1st currency:\n', (answer) => {
-      resolve(answer);
-    })
-  })
-}
+var app = require('../app');
+var debug = require('debug')('ticker-bot:server');
+var http = require('http');
 
-const inputSecondTicker = () => {
-  return new Promise((resolve, reject) => {
-    rl.question('Enter the ticker for 2nd currency:\n', (answer) => {
-      resolve(answer);
-    })
-  })
-}
+/**
+ * Get port from environment and store in Express.
+ */
 
-const inputInterval = () => {
-  return new Promise((resolve, reject) => {
-    rl.question('Enter the time interval for GET:\n', (answer) => {
-      resolve(answer);
-    })
-  })
-}
+var port = normalizePort(process.env.PORT || '3000');
+app.set('port', port);
 
-const inputPercentage = () => {
-  return new Promise((resolve, reject) => {
-    rl.question('Enter the oscillation percent:\n', (answer) => {
-      resolve(answer);
-    })
-  })
-}
+/**
+ * Create HTTP server.
+ */
 
-const createInDB = async (ask) => {
-  let c = await database.Oscillation.create({
-    first_ticker: first_ticker,
-    second_ticker: second_ticker,
-    rate: fetch_interval,
-    percent: price_oscillation_percent,
-    alerted_ask_price: ask
-  });
-  return c
-}
+var server = http.createServer(app);
 
-var upper_limit;
-var lower_limit;
-var fetch_interval;
-var price_oscillation_percent;
+/**
+ * Listen on provided port, on all network interfaces.
+ */
 
-const getTickers = async () => {
-  first_ticker = await inputFirstTicker();
-  second_ticker = await inputSecondTicker();
-  fetch_interval = await inputInterval();
-  price_oscillation_percent = await inputPercentage()
+server.listen(port);
+server.on('error', onError);
+server.on('listening', onListening);
 
-  request(`https://api.uphold.com/v0/ticker/${ first_ticker }-${ second_ticker }`, function (error, response, body) {
-    if (error)
-      console.error('error:', error);
-    const first_obj = JSON.parse(body);
-    const percent = parseFloat(first_obj.ask) * price_oscillation_percent/100;
-    upper_limit = parseFloat(first_obj.ask) + percent;
-    lower_limit = parseFloat(first_obj.ask) - percent;
-  });
+/**
+ * Normalize a port into a number, string, or false.
+ */
 
-  const getTicker = async function getTicker() {
-    let ask;
+function normalizePort(val) {
+  var port = parseInt(val, 10);
 
-    // Get data from public ticker
-    request(`https://api.uphold.com/v0/ticker/${ first_ticker }-${ second_ticker }`, function (error, response, body) {
-      if (error)
-        console.error('error:', error);
-      let obj = JSON.parse(body);
-      ask = parseFloat(obj.ask);
-
-      //Check if limit is exceeded and persist to db
-      if (ask > upper_limit || ask < lower_limit ) {
-        console.log(`WARNING: Ask price = ${ ask } is more than ${ price_oscillation_percent }
-                percent changed from initial values of ${ lower_limit } , ${ upper_limit }`);
-
-        // createInDB(ask).catch(e => {
-        //   console.log('There has been a problem with your fetch operation: ' + e.message);
-        // });
-      }
-    });
+  if (isNaN(port)) {
+    // named pipe
+    return val;
   }
 
-  setInterval(getTicker, parseFloat(fetch_interval));
-}
-getTickers()
+  if (port >= 0) {
+    // port number
+    return port;
+  }
 
+  return false;
+}
+
+/**
+ * Event listener for HTTP server "error" event.
+ */
+
+function onError(error) {
+  if (error.syscall !== 'listen') {
+    throw error;
+  }
+
+  var bind = typeof port === 'string'
+      ? 'Pipe ' + port
+      : 'Port ' + port;
+
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+    case 'EACCES':
+      console.error(bind + ' requires elevated privileges');
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      console.error(bind + ' is already in use');
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
+}
+
+/**
+ * Event listener for HTTP server "listening" event.
+ */
+
+function onListening() {
+  var addr = server.address();
+  var bind = typeof addr === 'string'
+      ? 'pipe ' + addr
+      : 'port ' + addr.port;
+  debug('Listening on ' + bind);
+}
 
