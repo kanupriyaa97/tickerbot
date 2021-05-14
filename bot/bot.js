@@ -55,10 +55,10 @@ var upper_limit;
 var lower_limit;
 
 const getTickers = async (first_ticker, second_ticker, fetch_interval, price_oscillation_percent) => {
-  //first_ticker = await inputFirstTicker();
-  //second_ticker = await inputSecondTicker();
-  //fetch_interval = await inputInterval();
-  //price_oscillation_percent = await inputPercentage()
+  // first_ticker = await inputFirstTicker();
+  // second_ticker = await inputSecondTicker();
+  // fetch_interval = await inputInterval();
+  // price_oscillation_percent = await inputPercentage()
 
   request(`https://api.uphold.com/v0/ticker/${ first_ticker }-${ second_ticker }`, function (error, response, body) {
     if (error)
@@ -80,7 +80,7 @@ const getTickers = async (first_ticker, second_ticker, fetch_interval, price_osc
       //Check if limit is exceeded and persist to db
       if (ask > upper_limit || ask < lower_limit ) {
         let message = `WARNING for pair ${first_ticker}:${second_ticker} : Ask price = ${ ask } is more than 
-        ${ price_oscillation_percent } percent changed from initial values of ${ lower_limit } , ${ upper_limit }`
+        ${ price_oscillation_percent } percent difference from initial values of ${ lower_limit } - ${ upper_limit }`
         console.log(message);
         createInDB(first_ticker, second_ticker, ask, price_oscillation_percent, fetch_interval).catch(e => {
           console.log('There has been a problem with your fetch operation: ' + e.message);
