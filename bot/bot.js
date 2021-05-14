@@ -42,7 +42,7 @@ const inputPercentage = () => {
   })
 }
 
-const createInDB = async (ask) => {
+const createInDB = async (first_ticker, second_ticker, ask, price_oscillation_percent, fetch_interval) => {
   let c = await database.Oscillation.create({
     first_ticker: first_ticker,
     second_ticker: second_ticker,
@@ -53,10 +53,9 @@ const createInDB = async (ask) => {
   return c
 }
 
+var ask;
 var upper_limit;
 var lower_limit;
-var fetch_interval;
-var price_oscillation_percent;
 
 const getTickers = async (first_ticker, second_ticker, fetch_interval, price_oscillation_percent) => {
   //first_ticker = await inputFirstTicker();
@@ -74,8 +73,6 @@ const getTickers = async (first_ticker, second_ticker, fetch_interval, price_osc
   });
 
   const getTicker = async function getTicker() {
-    let ask;
-
     // Get data from public ticker
     request(`https://api.uphold.com/v0/ticker/${ first_ticker }-${ second_ticker }`, function (error, response, body) {
       if (error)
@@ -88,9 +85,9 @@ const getTickers = async (first_ticker, second_ticker, fetch_interval, price_osc
         let message = `WARNING for pair ${first_ticker}:${second_ticker} : Ask price = ${ ask } is more than 
         ${ price_oscillation_percent } percent changed from initial values of ${ lower_limit } , ${ upper_limit }`
         console.log(message);
-        // createInDB(ask).catch(e => {
-        //   console.log('There has been a problem with your fetch operation: ' + e.message);
-        // });
+        createInDB(first_ticker, second_ticker, ask, price_oscillation_percent, fetch_interval).catch(e => {
+          console.log('There has been a problem with your fetch operation: ' + e.message);
+        });
       }
     });
   }
