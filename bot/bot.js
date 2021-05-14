@@ -1,10 +1,7 @@
 const request = require('request');
 const readline = require('readline');
 const database  = require('../database')
-const res = require("express");
 
-var first_ticker;
-var second_ticker;
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
