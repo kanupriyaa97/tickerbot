@@ -19,24 +19,32 @@ configuration at the time of the alert, etc.)
 
 # Instructions
 Clone the repo onto your local machine.
+```
+git clone git@github.com:kanupriyaa97/tickerbot.git
+```
 
-To run the ticketbot Docker image with Postgres run the following:
+Navigate to the root directory with the package.json file and install npm.
+```
+cd tickerbot
+npm install
+```
+
+Run the bot Docker image with Postgres:
 ```
 docker build -t tickerbot .
 docker run -it -p 3000:3000 tickerbot
 docker compose up
 ```
 
-To run the jest tests:
+Run the jest tests:
 ```
 docker-compose run addressbook npm test 
 ```
 
-Once the containers are running open [http://localhost:3000/](url) and enter the corresponding arguments needed. Once you have submitted the parameters the bot will begin monitoring the ticker pair. If there are any price warnings they will be shown in stdout.
+Once the containers are running - open [http://localhost:3000/](url) and enter the corresponding arguments needed. Once you have submitted the parameters the bot will begin monitoring the ticker pair. If there are any price warnings they will be shown in stdout.
 
 You can refresh [http://localhost:3000/](url) as many times as you would like and enter as many ticker pairs you would like. Warnings for all ticker pairs will show on stdout. 
 
-All warnings will be persisted to the Postgres database. You can look at the data in the table by following the instructions in this link:
-[https://dev.to/shree_j/how-to-install-and-run-psql-using-docker-41j2](url)
+All warnings will be persisted to the Postgres database. You can look at the data in the table by following the instructions in this link: [https://dev.to/shree_j/how-to-install-and-run-psql-using-docker-41j2](url)
 
 
